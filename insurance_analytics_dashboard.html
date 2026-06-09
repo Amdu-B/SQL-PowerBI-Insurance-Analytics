@@ -1,0 +1,400 @@
+
+<h2 class="sr-only">Insurance Sales Performance Analytics Dashboard — Generali project with KPIs, charts, and agent leaderboard</h2>
+
+<style>
+  .dash { font-family: var(--font-sans); padding: 0 0 2rem; }
+  .nav { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); padding-bottom: 0; }
+  .nav-btn { background: none; border: none; padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .nav-btn.active { color: var(--color-text-primary); border-bottom: 2px solid #3266ad; font-weight: 500; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+  .metric-label { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 4px; }
+  .metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0; }
+  .metric-sub { font-size: 11px; color: var(--color-text-tertiary); margin: 2px 0 0; }
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+  .chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
+  .chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin: 0 0 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--color-text-secondary); }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; }
+  .agent-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .agent-table th { text-align: left; color: var(--color-text-secondary); font-weight: 400; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 11px; }
+  .agent-table td { padding: 8px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); }
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: var(--border-radius-md); }
+  .badge-jun { background: #E6F1FB; color: #0C447C; }
+  .badge-mid { background: #EEEDFE; color: #3C3489; }
+  .badge-sen { background: #EAF3DE; color: #27500A; }
+  .bar-bg { background: var(--color-background-secondary); border-radius: 3px; height: 5px; margin-top: 3px; }
+  .bar-fill { height: 5px; border-radius: 3px; background: #3266ad; }
+  .bar-fill.over { background: #1D9E75; }
+  .full-chart { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; margin-bottom: 1.5rem; }
+  .qc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .qc-table th { text-align: left; color: var(--color-text-secondary); font-weight: 400; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); font-size: 11px; }
+  .qc-table td { padding: 7px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); }
+</style>
+
+<div class="dash">
+  <div style="margin-bottom:1.25rem;">
+    <p style="font-size:11px;color:var(--color-text-tertiary);margin:0 0 2px;">Generali Assicurazioni — Portfolio Analytics</p>
+    <p style="font-size:18px;font-weight:500;color:var(--color-text-primary);margin:0;">Sales Performance Dashboard</p>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('executive')">Executive summary</button>
+    <button class="nav-btn" onclick="showPage('network')">Sales network</button>
+    <button class="nav-btn" onclick="showPage('products')">Product mix</button>
+    <button class="nav-btn" onclick="showPage('quality')">Data quality</button>
+  </div>
+
+  <!-- PAGE 1: EXECUTIVE SUMMARY -->
+  <div class="page active" id="page-executive">
+    <div class="metric-grid">
+      <div class="metric">
+        <p class="metric-label">Total premiums (3yr)</p>
+        <p class="metric-value">€4.35M</p>
+        <p class="metric-sub">2022–2024</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Policies sold</p>
+        <p class="metric-value">4,381</p>
+        <p class="metric-sub">after QC cleaning</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Active agents</p>
+        <p class="metric-value">60</p>
+        <p class="metric-sub">across 8 regions</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Total claims</p>
+        <p class="metric-value">548</p>
+        <p class="metric-sub">avg loss ratio 30.2%</p>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <p class="chart-title">Annual premiums (€)</p>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#3266ad"></span>Premium €</span>
+        </div>
+        <div style="position:relative;height:200px;"><canvas id="c-annual" role="img" aria-label="Annual premiums bar chart showing 2022 1.48M, 2023 1.45M, 2024 1.42M">2022: €1.48M, 2023: €1.45M, 2024: €1.42M</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-title">Policies by status</p>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#1D9E75"></span>Attiva</span>
+          <span><span class="legend-dot" style="background:#73726c"></span>Scaduta</span>
+          <span><span class="legend-dot" style="background:#E24B4A"></span>Annullata</span>
+        </div>
+        <div style="position:relative;height:200px;"><canvas id="c-status" role="img" aria-label="Doughnut chart of policy status: Active 65%, Expired 28%, Cancelled 7%">Active 65%, Expired 28%, Cancelled 7%</canvas></div>
+      </div>
+    </div>
+
+    <div class="full-chart">
+      <p class="chart-title">Monthly trend — 2024 premiums (€)</p>
+      <div style="position:relative;height:190px;"><canvas id="c-monthly" role="img" aria-label="Line chart of monthly premiums in 2024 ranging from 104K to 137K">Monthly premiums ranged from €104K to €137K</canvas></div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: SALES NETWORK -->
+  <div class="page" id="page-network">
+    <div class="metric-grid">
+      <div class="metric">
+        <p class="metric-label">Top agent revenue</p>
+        <p class="metric-value">€103.9K</p>
+        <p class="metric-sub">Giorgia Ziani, Toscana</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Best target %</p>
+        <p class="metric-value">120.8%</p>
+        <p class="metric-sub">Liberto Golgi, Lazio</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Avg premium/agent</p>
+        <p class="metric-value">€72.7K</p>
+        <p class="metric-sub">all regions, 3yr total</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Junior agents</p>
+        <p class="metric-value">22</p>
+        <p class="metric-sub">of 60 total (37%)</p>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <p class="chart-title">Regional premiums (€)</p>
+        <div style="position:relative;height:240px;"><canvas id="c-regional" role="img" aria-label="Horizontal bar chart of regional premiums, Piemonte leads with 855K">Regional premiums: Piemonte 855K, Veneto 650K, Campania 629K...</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-title">Seniority mix</p>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#3266ad"></span>Junior</span>
+          <span><span class="legend-dot" style="background:#7F77DD"></span>Mid</span>
+          <span><span class="legend-dot" style="background:#1D9E75"></span>Senior</span>
+        </div>
+        <div style="position:relative;height:240px;"><canvas id="c-seniority" role="img" aria-label="Pie chart: Mid 42%, Junior 37%, Senior 22%">Mid 42%, Junior 37%, Senior 22%</canvas></div>
+      </div>
+    </div>
+
+    <div class="full-chart">
+      <p class="chart-title">Top 10 agents — total premium vs target achievement</p>
+      <table class="agent-table">
+        <thead><tr>
+          <th>Agent</th><th>Region</th><th>Seniority</th><th>Premium €</th><th>Target %</th>
+        </tr></thead>
+        <tbody id="agent-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAGE 3: PRODUCT MIX -->
+  <div class="page" id="page-products">
+    <div class="metric-grid">
+      <div class="metric">
+        <p class="metric-label">Top product</p>
+        <p class="metric-value">Vita</p>
+        <p class="metric-sub">€1.74M (40% of mix)</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Highest loss ratio</p>
+        <p class="metric-value">64.6%</p>
+        <p class="metric-sub">Salute</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Lowest loss ratio</p>
+        <p class="metric-value">8.7%</p>
+        <p class="metric-sub">Vita</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Total claims</p>
+        <p class="metric-value">548</p>
+        <p class="metric-sub">across all products</p>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <p class="chart-title">Premium by product type (€)</p>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#3266ad"></span>Vita</span>
+          <span><span class="legend-dot" style="background:#7F77DD"></span>Auto Kasko</span>
+          <span><span class="legend-dot" style="background:#1D9E75"></span>Salute</span>
+          <span><span class="legend-dot" style="background:#D85A30"></span>Auto RCA</span>
+          <span><span class="legend-dot" style="background:#73726c"></span>Other</span>
+        </div>
+        <div style="position:relative;height:230px;"><canvas id="c-products" role="img" aria-label="Doughnut chart showing product premium mix, Vita 40%, Auto Kasko 20%">Vita 40%, Auto Kasko 20%, Salute 16%, Auto RCA 11%, Casa 7%, Responsabilità 5%</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-title">Loss ratio by product (%)</p>
+        <div style="position:relative;height:230px;"><canvas id="c-loss" role="img" aria-label="Horizontal bar showing loss ratios: Salute 64.6%, Auto RCA 50.6%">Salute 64.6%, Auto RCA 50.6%, Auto Kasko 27.4%...</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 4: DATA QUALITY -->
+  <div class="page" id="page-quality">
+    <div class="metric-grid">
+      <div class="metric">
+        <p class="metric-label">Raw records</p>
+        <p class="metric-value">4,500</p>
+        <p class="metric-sub">policies loaded</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Errors found</p>
+        <p class="metric-value">119</p>
+        <p class="metric-sub">negative premiums</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Error rate</p>
+        <p class="metric-value">2.6%</p>
+        <p class="metric-sub">within acceptable threshold</p>
+      </div>
+      <div class="metric">
+        <p class="metric-label">Clean records</p>
+        <p class="metric-value">4,381</p>
+        <p class="metric-sub">used in analytics</p>
+      </div>
+    </div>
+
+    <div class="full-chart">
+      <p class="chart-title">Data quality log — sample of flagged records</p>
+      <table class="qc-table">
+        <thead><tr>
+          <th>Policy ID</th><th>Field</th><th>Issue detected</th><th>Action taken</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>POL00023</td><td>premium_eur</td><td>Negative value: −€642.10</td><td>Record excluded from KPI calculation</td><td><span class="badge" style="background:#EAF3DE;color:#27500A">Resolved</span></td></tr>
+          <tr><td>POL00071</td><td>premium_eur</td><td>Negative value: −€1,204.50</td><td>Record excluded from KPI calculation</td><td><span class="badge" style="background:#EAF3DE;color:#27500A">Resolved</span></td></tr>
+          <tr><td>POL00158</td><td>premium_eur</td><td>Negative value: −€389.00</td><td>Record excluded from KPI calculation</td><td><span class="badge" style="background:#EAF3DE;color:#27500A">Resolved</span></td></tr>
+          <tr><td>POL00247</td><td>premium_eur</td><td>Negative value: −€720.80</td><td>Record excluded from KPI calculation</td><td><span class="badge" style="background:#EAF3DE;color:#27500A">Resolved</span></td></tr>
+          <tr><td>POL00312</td><td>premium_eur</td><td>Negative value: −€1,540.00</td><td>Record excluded from KPI calculation</td><td><span class="badge" style="background:#EAF3DE;color:#27500A">Resolved</span></td></tr>
+          <tr><td colspan="5" style="color:var(--color-text-tertiary);font-size:11px;padding-top:8px;">… and 114 more records. Full log in data_quality_log.xlsx</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="full-chart">
+      <p class="chart-title">Record validity distribution</p>
+      <div style="position:relative;height:180px;"><canvas id="c-qc" role="img" aria-label="Bar chart showing 4381 clean records vs 119 dirty records">4381 clean records, 119 with errors</canvas></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const topAgents = [
+  {name:'Giorgia Ziani',region:'Toscana',seniority:'Mid',premium:103888,pct:67.0},
+  {name:'Liberto Golgi',region:'Lazio',seniority:'Junior',premium:95552,pct:120.8},
+  {name:'Gioffre Murialdo',region:'Piemonte',seniority:'Mid',premium:89889,pct:56.2},
+  {name:'Ludovica Bonatti',region:'Sicilia',seniority:'Senior',premium:89567,pct:32.8},
+  {name:'Piergiorgio Boldù',region:'Lombardia',seniority:'Junior',premium:88510,pct:110.2},
+  {name:'Antonino Norbiato',region:'Lazio',seniority:'Mid',premium:87869,pct:59.1},
+  {name:'Cecilia Guarneri',region:'Campania',seniority:'Junior',premium:87667,pct:107.1},
+  {name:'Cassandra Cremonesi',region:'Veneto',seniority:'Mid',premium:87387,pct:55.4},
+  {name:'Pina Innocenti',region:'Veneto',seniority:'Senior',premium:85347,pct:30.6},
+  {name:'Fiamma Gargallo',region:'Sicilia',seniority:'Mid',premium:84732,pct:54.9},
+];
+
+const tbody = document.getElementById('agent-tbody');
+topAgents.forEach((a,i) => {
+  const over = a.pct >= 100;
+  const badgeClass = a.seniority === 'Junior' ? 'badge-jun' : a.seniority === 'Mid' ? 'badge-mid' : 'badge-sen';
+  tbody.innerHTML += `<tr>
+    <td style="font-weight:500">${i+1}. ${a.name}</td>
+    <td style="color:var(--color-text-secondary)">${a.region}</td>
+    <td><span class="badge ${badgeClass}">${a.seniority}</span></td>
+    <td>€${a.premium.toLocaleString('it-IT')}</td>
+    <td>
+      <span style="font-size:11px;color:${over?'#0F6E56':'var(--color-text-primary)'};font-weight:${over?500:400}">${a.pct.toFixed(1)}%</span>
+      <div class="bar-bg"><div class="bar-fill ${over?'over':''}" style="width:${Math.min(a.pct,130)/1.3}%"></div></div>
+    </td>
+  </tr>`;
+});
+
+const defaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false } }
+};
+
+new Chart(document.getElementById('c-annual'), {
+  type: 'bar',
+  data: {
+    labels: ['2022','2023','2024'],
+    datasets: [{
+      data: [1482623, 1449872, 1417498],
+      backgroundColor: ['#3266ad','#3266ad','#3266ad'],
+      borderRadius: 4
+    }]
+  },
+  options: { ...defaults, scales: {
+    y: { ticks: { callback: v => '€' + (v/1000000).toFixed(2) + 'M', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+    x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+  }}
+});
+
+new Chart(document.getElementById('c-status'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Attiva 65%','Scaduta 28%','Annullata 7%'],
+    datasets: [{ data: [65, 28, 7], backgroundColor: ['#1D9E75','#73726c','#E24B4A'], borderWidth: 0 }]
+  },
+  options: { ...defaults, cutout: '65%' }
+});
+
+new Chart(document.getElementById('c-monthly'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      data: [126213,121958,128018,103929,136831,116895,109131,115435,116666,121362,110278,110782],
+      borderColor: '#3266ad', backgroundColor: 'rgba(50,102,173,0.08)',
+      fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#3266ad', borderWidth: 1.5
+    }]
+  },
+  options: { ...defaults, scales: {
+    y: { ticks: { callback: v => '€' + Math.round(v/1000) + 'K', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+    x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+  }}
+});
+
+new Chart(document.getElementById('c-regional'), {
+  type: 'bar',
+  data: {
+    labels: ['Piemonte','Veneto','Campania','Lombardia','Lazio','Toscana','Sicilia','Emilia-R.'],
+    datasets: [{
+      data: [855268,650292,628538,609069,541666,456079,375383,233697],
+      backgroundColor: '#3266ad', borderRadius: 3
+    }]
+  },
+  options: { ...defaults, indexAxis: 'y', scales: {
+    x: { ticks: { callback: v => '€' + Math.round(v/1000) + 'K', font: { size: 10 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+    y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+  }}
+});
+
+new Chart(document.getElementById('c-seniority'), {
+  type: 'pie',
+  data: {
+    labels: ['Junior 37%','Mid 42%','Senior 22%'],
+    datasets: [{
+      data: [22, 25, 13],
+      backgroundColor: ['#3266ad','#7F77DD','#1D9E75'], borderWidth: 0
+    }]
+  },
+  options: { ...defaults }
+});
+
+new Chart(document.getElementById('c-products'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Vita 40%','Auto Kasko 20%','Salute 16%','Auto RCA 11%','Casa 7%','Responsabilità 5%'],
+    datasets: [{
+      data: [1745065,880961,711030,471765,306923,234248],
+      backgroundColor: ['#3266ad','#7F77DD','#1D9E75','#D85A30','#73726c','#BA7517'],
+      borderWidth: 0
+    }]
+  },
+  options: { ...defaults, cutout: '60%' }
+});
+
+new Chart(document.getElementById('c-loss'), {
+  type: 'bar',
+  data: {
+    labels: ['Salute','Auto RCA','Auto Kasko','Casa','Responsabilità','Vita'],
+    datasets: [{
+      data: [64.6,50.6,27.4,16.3,13.5,8.7],
+      backgroundColor: ['#E24B4A','#D85A30','#EF9F27','#1D9E75','#1D9E75','#0F6E56'],
+      borderRadius: 3
+    }]
+  },
+  options: { ...defaults, indexAxis: 'y', scales: {
+    x: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' }, max: 80 },
+    y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+  }}
+});
+
+new Chart(document.getElementById('c-qc'), {
+  type: 'bar',
+  data: {
+    labels: ['Clean records','Flagged records'],
+    datasets: [{
+      data: [4381, 119],
+      backgroundColor: ['#1D9E75','#E24B4A'], borderRadius: 4
+    }]
+  },
+  options: { ...defaults, scales: {
+    y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+    x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+  }}
+});
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
