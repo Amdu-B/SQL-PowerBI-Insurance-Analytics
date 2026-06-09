@@ -1,6 +1,7 @@
 # Insurance Sales Analytics
 
 **Data Analyst / BI Engineer** 
+
 **Stack:** Python · SQLite · SQL · Power BI (dashboard replicated as HTML/JS) · Excel  
 
 ---
