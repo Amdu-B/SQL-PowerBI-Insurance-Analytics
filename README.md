@@ -1,6 +1,6 @@
-# Insurance Sales Analytics — Portfolio Project
+# Insurance Sales Analytics
 
-**Role target:** Data Analyst / BI Engineer — Generali Assicurazioni Italia  
+**Data Analyst / BI Engineer** 
 **Stack:** Python · SQLite · SQL · Power BI (dashboard replicated as HTML/JS) · Excel  
 
 ---
@@ -97,15 +97,6 @@ claims ────────────────────────�
 - **Piemonte** leads regional revenue (€855K), while **Emilia-Romagna** has the highest premium per agent (€77.9K)
 
 ---
-
-## CV bullet point
-
-> Designed and delivered an end-to-end insurance analytics solution processing 4,500+
-> policy records from Excel/CSV sources. Built a normalised SQLite database, wrote 8
-> SQL queries to compute revenue KPIs, agent rankings, claim ratios, and regional
-> performance. Identified and documented 119 data quality anomalies (2.6% error rate).
-> Visualised results in an interactive multi-page Power BI-style dashboard with
-> drill-down across product mix, sales network, and time-series views.
 
 ---
 
